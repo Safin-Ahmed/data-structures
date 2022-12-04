@@ -1,22 +1,58 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define MAX_NAME 256
 #define TABLE_SIZE 10
-#define DELETED_NODE (person*)(0xFFFFFFFFFFFFFFFUL)
+#define DELETED_NODE (person*)(0xFFFFFFFFFFFFUL)
 
 typedef struct person {
     char name[MAX_NAME];
     int age;
-    struct person * next
+    struct person * next;
 }
 person;
 
 person *hash_table[TABLE_SIZE];
 
+unsigned int hash(char *name);
+void init_hash_table();
+void print_table();
+bool insert(char *name, int age);
+person * find(char *name);
+person * delete(char *name);
+void destroyList();
+void destroy();
+
+int main ()
+{
+    init_hash_table();
+    insert("Safin", 24);
+    insert("Mew", 12);
+    insert("Sayeba", 3);
+    print_table();
+    person * tmp = find("Safin");
+    if (tmp == NULL)
+    {
+        printf("Not Found\n");
+    }
+    else 
+    {
+        printf("Found user: %s\n", tmp->name);
+    }
+
+    destroy();
+    print_table();
+
+    
+
+
+    return 0;
+}
+
 unsigned int hash(char *name)
-{   
+{
     int length = strlen(name);
     unsigned int hash_value = 0;
     for (int i = 0; i < length; i++)
@@ -28,13 +64,12 @@ unsigned int hash(char *name)
     return hash_value;
 }
 
-void init_hash_table() {
+void init_hash_table()
+{
     for (int i = 0; i < TABLE_SIZE; i++)
     {
         hash_table[i] = NULL;
     }
-
-    // Table is empty
 }
 
 void print_table()
@@ -45,12 +80,13 @@ void print_table()
         {
             printf("\t%i\t---\n", i);
         }
-        else {
+        else
+        {
             printf("\t%i\t ", i);
             person *tmp = hash_table[i];
-            while (tmp != NULL)
+            while(tmp != NULL)
             {
-                printf("%s - ", hash_table[i]->name);
+                printf("%s - ", tmp->name);
                 tmp = tmp->next;
             }
             printf("\n");
@@ -60,16 +96,23 @@ void print_table()
     printf("End\n");
 }
 
-bool insert(person *p) 
+bool insert (char *name, int age)
 {
-    if (p == NULL) return false;
+    if (name == NULL) return false;
+    person *p = malloc(sizeof(person));
+    if (p == NULL)
+    {
+        printf("Memory Insufficient!\n");
+        return false;
+    }
+    strcpy(p->name, name);
+    p->age = age;
     int index = hash(p->name);
     p->next = hash_table[index];
     hash_table[index] = p;
     return true;
 }
 
-// find a person in the table by their name
 person * find(char *name)
 {
     int index = hash(name);
@@ -86,65 +129,60 @@ person * delete (char *name)
     int index = hash(name);
     person *tmp = hash_table[index];
     person *prev = NULL;
+
     while(tmp != NULL && strcmp(tmp->name, name) != 0)
-    {   
+    {
         prev = tmp;
         tmp = tmp->next;
     }
+
     if (tmp == NULL)
     {
         return NULL;
     }
-    if (prev == NULL) 
+
+    if (prev == NULL)
     {
-        // deleting the head
-        hash_table[index] = tmp->next;
+        person *final = tmp->next;
+        free(hash_table[index]);
+        hash_table[index] = final;
     }
-    else {
+    else
+    {
         prev->next = tmp->next;
+        free(tmp);
     }
+
     return tmp;
 }
 
-int main()
-{   
-    init_hash_table();
-     
-    person safin = {.name = "Safin", .age = 22};
-    person kate = {.name = "Kate", .age = 24};
-    person jane = {.name = "Jane", .age = 24};
-    person rupa = {.name = "Rupa", .age = 24};
-    person parthib = {.name = "Parthib", .age = 24};
-
-    insert(&safin);
-    insert(&kate);
-    insert(&jane);
-    insert(&rupa);
-    insert(&parthib);
-    print_table();
-
-    person *tmp = find("Mpho");
-    if (tmp == NULL)
+void destroyList(person *p)
+{
+    if (p == NULL)
     {
-        printf("Not found\n");
-    }
-    else 
-    {
-        printf("Found %s\n", tmp->name);
+        return;
     }
 
-    person *del = delete("Safin");
-    printf("del: %p\n", del);
-    print_table();
-
-    tmp = find("Safin");
-    if (tmp == NULL)
-    {
-        printf("Not found\n");
-    }
-    else 
-    {
-        printf("Found %s\n", tmp->name);
-    }
-    return 0;
+    destroyList(p->next);
+    free(p);
 }
+
+void destroy() {
+    for (int i = 0; i < TABLE_SIZE; i++)
+    {
+        if(hash_table[i] == NULL)
+        {
+            continue;
+        }
+        else {
+            destroyList(hash_table[i]);
+        }
+        
+        hash_table[i] = NULL;
+    }
+}
+
+/* 
+
+
+*/
