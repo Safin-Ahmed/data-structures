@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Define the character size
 #define CHAR_SIZE 26
@@ -54,7 +55,7 @@ int search(Trie *head, char *str)
     // return 0 if trie is empty
     if (head == NULL)
     {
-        return 2;
+        return 0;
     }
 
     Trie *cur = head; 
@@ -137,12 +138,35 @@ int delete (struct Trie **cur, char *str)
     return 0;
 }
 
-void printTries(Trie *node)
+void print_rec(Trie *node, char *prefix, int length)
 {
-    if(node == NULL)
+    char new_prefix[length + 2];
+    memcpy(new_prefix, prefix, length);
+    new_prefix[length + 1] = 0;
+
+    if (node->isLeaf)
     {
-        return 0;
+        printf("Word: %s\n", prefix);
     }
+
+    for (int i = 0; i < CHAR_SIZE; i++)
+    {
+        if (node->character[i] != NULL)
+        {
+            new_prefix[length] = 'a' + i;
+            print_rec(node->character[i], new_prefix, length + 1);
+        }
+    }
+}
+
+void print(Trie *root)
+{
+    if(root == NULL)
+    {   
+        printf("Trie is empty!\n");
+    }
+
+    print_rec(root, NULL, 0);
 }
 
 int main()
@@ -161,6 +185,8 @@ int main()
 
     insert(head, "ahmed");
     printf("Find ahmed: %d \n", search(head, "ahmed"));
+
+    print(head);
 
     delete(&head, "ahmed");
     printf("Find ahmed: %d \n", search(head, "ahmed"));
