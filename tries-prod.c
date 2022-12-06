@@ -5,8 +5,8 @@
 
 #define NUM_CHARS 256
 
-typedef struct trienode 
-{   
+typedef struct trienode
+{
     struct trienode *children[NUM_CHARS];
     bool terminal;
 }
@@ -65,7 +65,6 @@ void print_rec(trienode *node, unsigned char *prefix, int length)
     if (node->terminal)
     {
         printf("WORD: %s\n", prefix);
-        free(prefix);
     }
 
     for (int i = 0; i < NUM_CHARS; i++)
@@ -74,11 +73,22 @@ void print_rec(trienode *node, unsigned char *prefix, int length)
         {
             newprefix[length] = i;
             print_rec(node->children[i], newprefix, length + 1);
-        }      
+        }
     }
+
+    free(newprefix);
 }
 
+void print(trienode * root)
+{
+    if (root == NULL)
+    {
+        printf("TRIE EMPTY!\n");
+        return;
+    }
 
+    print_rec(root, NULL, 0);
+}
 
 // Search a String
 bool search(trienode *head, char* str)
@@ -93,8 +103,8 @@ bool search(trienode *head, char* str)
     while(*str)
     {
         // go to the next node
-        cur = cur->children[*str];
-        
+        cur = cur->children[(unsigned char)(*str)];
+
         // If it's an invalid path return NULL
         if (cur == NULL)
         {
@@ -134,21 +144,67 @@ int delete (trienode **cur, char *str)
     // If the end of string is not reached
     if (*str)
     {
-        
+        if (*cur != NULL && (*cur)->children[(unsigned char)*str] != NULL && delete(&(*cur)->children[(unsigned char)*str], str + 1) && (*cur)->terminal == false)
+        {
+            if (!hasChildren(*cur))
+            {
+                *cur = NULL;
+                free(*cur);
+                return 1;
+            }
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    // If the end of string is reached
+    if (*str == '\0' && (*cur)->terminal)
+    {
+        if (!hasChildren(*cur))
+        {
+            (*cur) = NULL;
+            free(*cur);
+            return 1;
+        }
+        else
+        {
+            // Mark the node as non leaf node (DON'T DELETE)
+            (*cur)->terminal = false;
+            return 0;
+        }
+    }
+
+    return 0;
+}
+
+void destroy(trienode **root)
+{
+    if ((*root) != NULL)
+    {
+        for (int i = 0; i < NUM_CHARS; i++)
+        {
+            if ((*root)->children[i] != NULL)
+            {
+                destroy(&((*root)->children[i]));
+            }
+        }
+        free(*root);
     }
 }
 
 int main()
-{   
+{
     trienode * root = NULL;
     insert(&root, "KIT");
-    insert(&root, "CATTLE");
-    insert(&root, "CAT");
-    insert(&root, "HAPPY");
-
+    // insert(&root, "CATTLE");
+    // insert(&root, "CAT");
+    // insert(&root, "HAPPY");
+    // delete(&root, "CAT");
     print(root);
 
-    bool tmp = search(root, "CATLE");
+    bool tmp = search(root, "CATTLE");
     if (tmp != false)
     {
         printf("Found Word\n");
@@ -158,6 +214,8 @@ int main()
         printf("Not Found Word\n");
     }
 
-    
+    destroy(&root);
+
+
     return 0;
 }
