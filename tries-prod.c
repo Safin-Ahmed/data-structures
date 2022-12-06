@@ -80,6 +80,64 @@ void print_rec(trienode *node, unsigned char *prefix, int length)
 
 
 
+// Search a String
+bool search(trienode *head, char* str)
+{
+    // return 0 if trie is empty
+    if (head == NULL)
+    {
+        return false;
+    }
+
+    trienode *cur = head;
+    while(*str)
+    {
+        // go to the next node
+        cur = cur->children[*str];
+        
+        // If it's an invalid path return NULL
+        if (cur == NULL)
+        {
+            return 0;
+        }
+
+        str++;
+    }
+
+    return cur->terminal;
+}
+
+// Detect if the current node has children
+int hasChildren(trienode *node)
+{
+    for (int i = 0; i < NUM_CHARS; i++)
+    {
+        if (node->children[i])
+        {
+            // The node has children
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+// Recursive Function to delete a string from Trie
+int delete (trienode **cur, char *str)
+{
+    // Return 0 if trie is empty
+    if (*cur == NULL)
+    {
+        return 0;
+    }
+
+    // If the end of string is not reached
+    if (*str)
+    {
+        
+    }
+}
+
 int main()
 {   
     trienode * root = NULL;
@@ -89,5 +147,17 @@ int main()
     insert(&root, "HAPPY");
 
     print(root);
+
+    bool tmp = search(root, "CATLE");
+    if (tmp != false)
+    {
+        printf("Found Word\n");
+    }
+    else
+    {
+        printf("Not Found Word\n");
+    }
+
+    
     return 0;
 }
