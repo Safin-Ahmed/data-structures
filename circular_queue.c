@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-// Structure for queue
+// Structure for circular queue
 typedef struct queue
 {
     int size;
@@ -15,7 +15,7 @@ queue;
 // Checks if the queue is full
 int isFull(queue *q)
 {
-    if (q->r==q->size-1)
+    if (((q->r+1) % q->size) == q->f)
     {
         return 1;
     }
@@ -24,7 +24,7 @@ int isFull(queue *q)
 
 // Checks if the queue is empty
 int isEmpty(queue *q)
-{
+{   
     if (q->r==q->f)
     {
         return 1;
@@ -37,12 +37,14 @@ void enqueue(queue *q, int val)
 {
     if (isFull(q))
     {
-        printf("This Queue is full!");
+        printf("This Queue is full!\n");
     }
     else
-    {
-        q->r++;
+    {   
+        
+        q->r = (q->r + 1) % q->size;
         q->arr[q->r] = val;
+        printf("Enqueued Element: %d\n", val);
 
     }
 }
@@ -57,8 +59,9 @@ int dequeue (queue *q)
     }
     else
     {
-        q->f++;
+        q->f = (q->f + 1) % q->size;
         a = q->arr[q->f];
+        printf("Dequeued Element: %d\n", a);
     }
     return a;
 }
@@ -74,7 +77,7 @@ void print (queue *q)
     else 
     {   
         // Loops through the Array
-        for (int i = q->f + 1; i <= q->r; i++)
+        for (int i = ((q->f + 1) % q->size); i <= q->r; i++)
         {
             printf("%d\n", q->arr[i]);
         }
@@ -85,7 +88,7 @@ int main(int argc, char* argv[])
 {   
     queue q;
     q.size = 4;
-    q.f = q.r = -1;
+    q.f = q.r = 0;
     q.arr = (int*) malloc(q.size * sizeof(int));
 
     if(isEmpty(&q))
@@ -97,19 +100,19 @@ int main(int argc, char* argv[])
     enqueue(&q, 12);
     enqueue(&q, 15);
     enqueue(&q, 16);
-    enqueue(&q, 17);
 
     // Print queue
     print(&q);
 
     // Dequeue
-    printf("Dequeuing Element %d\n", dequeue(&q));
-    printf("Dequeuing Element %d\n", dequeue(&q));
-    printf("Dequeuing Element %d\n", dequeue(&q));
-    printf("Dequeuing Element %d\n", dequeue(&q));
+     dequeue(&q);
+     dequeue(&q);
+     dequeue(&q);
 
     // Enqueue 
     enqueue(&q, 19);
+    enqueue(&q, 20);
+    enqueue(&q, 21);
 
 
     // if empty
@@ -123,5 +126,7 @@ int main(int argc, char* argv[])
     {
         printf("The queue is full!\n");
     }
+
+    print(&q);
     return 0;
 }
